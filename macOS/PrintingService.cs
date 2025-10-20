@@ -1,8 +1,10 @@
 ﻿#if MACOS
 using Avalonia;
 using Avalonia.Skia.Helpers;
+using Moq;
 using PdfKit;
 using SkiaSharp;
+using System.Diagnostics;
 
 namespace Avae.Printables
 {
@@ -10,24 +12,38 @@ namespace Avae.Printables
     {
         public IEnumerable<IPrinter> GetPrinters()
         {
-            return Enumerable.Empty<IPrinter>();
+            var names = NSPrinter.PrinterNames;
+            var printers = new List<IPrinter>();
+            foreach (var name in names)
+            {
+                var moq = new Mock<IPrinter>();
+                moq.Setup(m => m.Name).Returns(name);
+                printers.Add(moq.Object);
+            }
+
+            return printers;
         }
 
         public Task Print(IPrinter printer, string file)
         {
-            throw new NotImplementedException();
+            ProcessStartInfo pStartInfo = new ProcessStartInfo();
+            pStartInfo.FileName = "lpr";
+            pStartInfo.Arguments = $"-P \"{printer.Name}\" \"{file}\"";
+            pStartInfo.UseShellExecute = false;
+            pStartInfo.CreateNoWindow = true;
+            Process.Start(pStartInfo);
+
+            return Task.CompletedTask;
         }
 
-        private Task Print(string title, NSView view)
+        private Task Print(string title, NSView view, NSPrinter? printer = null)
         {
             var printInfo = new NSPrintInfo
             {
-                HorizontallyCentered = true,
-                VerticallyCentered = true,
-                Orientation = NSPrintingOrientation.Portrait,
+                Printer = printer,
             };
 
-            var printOperation = NSPrintOperation.FromView(view, printInfo);
+            var printOperation = NSPrintOperation.FromView(view, printInfo);            
             printOperation.ShowsPrintPanel = true;
             printOperation.ShowsProgressPanel = true;
             printOperation.RunOperation();
@@ -39,11 +55,13 @@ namespace Avae.Printables
         {
             var url = NSUrl.FromFilename(file);
             var image = new NSImage(url);
-            var cell = new NSImageCell()
+            var cell = new NSImageView()
             {
-                Image = image
+                Image = image,
+                Frame = new CGRect(0, 0, image.Size.Width, image.Size.Height),
+                ImageScaling = NSImageScale.ProportionallyUpOrDown
             };
-            return cell.ControlView;
+            return cell;
         }
 
         private NSView FromPdf(string file)
@@ -51,7 +69,7 @@ namespace Avae.Printables
             return new PdfView() { Document = new PdfDocument(NSUrl.FromFilename(file)) };
         }
 
-        public Task Print(string title, string file)
+        public Task Print(string title, string file, Stream? stream = null)
         {
             return Print(title, Path.GetExtension(file).ToLower() switch
             {
@@ -71,16 +89,17 @@ namespace Avae.Printables
 
             var file = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".pdf");
 
-            using var document = new PdfDocument(NSUrl.FromFilename(file));
-            var elements = visuals.ToList();
-            foreach (var visual in elements)
+            using var doc = SKDocument.CreatePdf(file);
+
+            foreach (var visual in visuals)
             {
-                using var image = await VisualHelper.Render(visual, A4_WIDTH, A4_HEIGHT, DrawingContextHelper.RenderAsync);
-                using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-                using var nsImage = new NSImage(NSData.FromArray(data.ToArray()));
-                var page = new PdfPage(nsImage);
-                document.InsertPage(page, elements.IndexOf(visual));
+                using var canvas = doc.BeginPage(A4_WIDTH, A4_HEIGHT);
+                using var image = await VisualHelper.MeasureArrange(visual, A4_WIDTH, A4_HEIGHT, DrawingContextHelper.RenderAsync);
+                canvas.DrawImage(image, 0, 0);
+                doc.EndPage();
             }
+
+            doc.Close();
 
             await Print(title, file);
         }

@@ -9,6 +9,13 @@ namespace Avae.Printables
 {
     public class PrintingService : IPrintingService
     {
+        public PrintingService()
+        {
+             Microsoft.UI.Dispatching.DispatcherQueueController.CreateOnCurrentThread();
+
+             Microsoft.UI.Xaml.Hosting.WindowsXamlManager.InitializeForCurrentThread();           
+        }
+
         public IEnumerable<IPrinter> GetPrinters()
         {
             var printers = new List<IPrinter>();
@@ -39,7 +46,7 @@ namespace Avae.Printables
             }
         }
 
-        public async Task Print(string title, string file)
+        public async Task Print(string title, string file, Stream? stream = null)
         {
             PrinterBase helper = Path.GetExtension(file).ToLower() switch
             {
@@ -74,4 +81,3 @@ namespace Avae.Printables
     }
 }
 #endif
-    

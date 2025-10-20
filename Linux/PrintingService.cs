@@ -1,6 +1,8 @@
 ﻿#if GTK
+using Avalonia.Skia.Helpers;
 using Gtk;
 using Moq;
+using SkiaSharp;
 
 namespace Avae.Printables
 {
@@ -26,7 +28,7 @@ namespace Avae.Printables
             return Task.CompletedTask;
         }
         
-        public Task Print(string title, string file)
+        public Task Print(string title, string file, Stream? stream = null)
         {
             Gtk.Application.Init();
 
@@ -47,7 +49,6 @@ namespace Avae.Printables
         public Task Print(string title, IEnumerable<Avalonia.Visual> visuals)
         {
             Gtk.Application.Init();
-
             var operation = new VisualOperation(title, visuals);
             operation.Run(PrintOperationAction.PrintDialog, null);
             return Task.CompletedTask;

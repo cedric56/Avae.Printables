@@ -18,7 +18,7 @@ namespace Avae.Printables
             throw new NotImplementedException();
         }
 
-        public Task Print(string title, string file)
+        public Task Print(string title, string file, Stream? stream = null)
         {
             var print = UIPrintInteractionController.SharedPrintController;
 

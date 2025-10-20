@@ -1,23 +1,44 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0-gtk;net8.0-android;net8.0-ios;net8.0-macos;net8.0-windows10.0.19041.0;</TargetFrameworks>
+    <TargetFrameworks>net8.0;net8.0-browser;net8.0-gtk;net8.0-android;net8.0-ios;net8.0-macos;net8.0-windows10.0.19041.0;</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackageId>Avae.Printables</PackageId>
+    <Version>1.0.1</Version>
+    <Authors>cedricb</Authors>
+    <Product>Avae.Printables</Product>
+    <Description>Printing for avalonia</Description>
+    <PackageTags>avalonia;printing;crossplatform</PackageTags>
+    <RepositoryUrl>https://github.com/cedric56/Avae.Printables</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/cedric56/Avae.Printables</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>Licence.md</PackageLicenseFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.0" />
-    <PackageReference Include="PDFtoImage" Version="5.1.1" />
     <PackageReference Include="Svg.Skia" Version="3.2.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.9" />
     <PackageReference Include="Moq" Version="4.20.72" />
-    
-  </ItemGroup>
 
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" />
+    <None Include="Licence.md" Pack="true" PackagePath="" />
+  </ItemGroup>
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
     <PackageReference Include="Avalonia.Android" Version="11.3.0" />
   </ItemGroup>
-  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'gtk'">
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'browser'">
+    <PackageReference Include="Avalonia.Browser" Version="11.3.0" />
+  </ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'browser'">
+    <PackageReference Include="PDFtoImage" Version="5.1.1" />
+  </ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'gtk'">    
     <PackageReference Include="GtkSharp" Version="3.24.24.95" />
     <PackageReference Include="Avalonia.Desktop" Version="11.1.0" />
   </ItemGroup>

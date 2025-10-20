@@ -11,20 +11,22 @@ namespace Avae.Printables
     public static class Extensions
     {
 #if ANDROID
-        public static void UsePrinting(this IServiceCollection services, Activity activity, Context context)
+        public static AppBuilder UsePrinting(this AppBuilder builder, Activity activity, Context context)
 #else
-        public static void UsePrinting(this IServiceCollection services)
+        public static AppBuilder UsePrinting(this AppBuilder builder)
 #endif
         {
 #if ANDROID
-            var service = new PrintingService(activity, context);
-            services.AddSingleton<IPrintingService>(service);
-            Printable.SetDefault(service);
-#else
-            var service = new PrintingService();
-            services.AddSingleton<IPrintingService>(service);
-            Printable.SetDefault(service);
+            Printable.SetDefault(new PrintingService(activity, context));
+#elif BROWSER || MACOS || IOS || WINDOWS10_0_19041_0_OR_GREATER || GTK
+            Printable.SetDefault(new PrintingService());
 #endif
+
+#if BROWSER
+
+#endif
+
+            return builder;
         }
     }
 
@@ -46,10 +48,11 @@ namespace Avae.Printables
         {
             return Default.Print(title, visuals);
         }
-        public static Task Print(string title, string file)
+        public static Task Print(string title, string file, Stream stream)
         {
-            return Default.Print(title, file);
+            return Default.Print(title, file, stream);
         }
+
         public static Task Print(IPrinter printer, string file)
         {
             return Default.Print(printer, file);

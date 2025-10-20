@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿#if !BROWSER
+using SkiaSharp;
 using System.Text;
 
 namespace Avae.Printables
@@ -55,3 +56,4 @@ namespace Avae.Printables
         }
     }
 }
+#endif

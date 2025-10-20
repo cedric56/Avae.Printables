@@ -6,13 +6,10 @@ using Android.Print;
 using Android.Print.Pdf;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Skia.Helpers;
 using SkiaSharp;
 using Paint = Android.Graphics.Paint;
-using Rect = Avalonia.Rect;
-using Size = Avalonia.Size;
 
 namespace Avae.Printables
 {
@@ -64,7 +61,7 @@ namespace Avae.Printables
             return Task.CompletedTask;
         }
 
-        public async Task Print(string title, string file)
+        public async Task Print(string title, string file, Stream? stream = null)
         {
             Task task = System.IO.Path.GetExtension(file).ToLower() switch
             {
@@ -139,47 +136,13 @@ namespace Avae.Printables
             foreach (var visual in visuals)
             {
                 using var canvas = doc.BeginPage(pageWidth, pageHeight);
-                using var image = await VisualHelper.Render(visual, pageWidth, pageHeight, DrawingContextHelper.RenderAsync);
-                float scaleX = pageWidth / (float)visual.Bounds.Width;
-                float scaleY = pageHeight / (float)visual.Bounds.Height;
-                canvas.Scale(scaleX, scaleY);
+                using var image = await VisualHelper.MeasureArrange(visual, pageWidth, pageHeight, DrawingContextHelper.RenderAsync);
                 canvas.DrawImage(image, 0, 0);
-
-                //canvas.Scale(scaleX, scaleY);
-                //var original = visual.Bounds;
-
-                //MeasureAndArrange(visual, pageWidth, pageHeight);
-
-                //var bounds = visual.Bounds;
-
-                //using var canvas = doc.BeginPage(pageWidth, pageHeight);
-
-                //// Compute scale so the visual fills the page exactly
-                ////float scaleX = pageWidth / (float)bounds.Width;
-                ////float scaleY = pageHeight / (float)bounds.Height;
-
-                ////canvas.Scale(scaleX, scaleY);
-
-                //await DrawingContextHelper.RenderAsync(canvas, visual);
-
-                //MeasureAndArrange(visual, original.Width, original.Height);
-                
                 doc.EndPage();
             }
 
             doc.Close();
             await Print(title, file);
-        }
-
-
-        private void MeasureAndArrange(Visual visual, double width, double height)
-        {
-            if (visual is Layoutable layoutable)
-            {
-                layoutable.Measure(new Size(width, height));
-                layoutable.Arrange(new Rect(0, 0, width, height));
-                layoutable.UpdateLayout();
-            }
         }
     }
 }
