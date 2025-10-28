@@ -1,6 +1,6 @@
 # Avae.Printables
 
-A crossplatform library for printing.
+A crossplatform library for printing. (Supported formats Png,Pdf,Html,Gif,Jpeg,Bmp,Ico)
 
 # Features
 
@@ -125,4 +125,4 @@ Avae.Printables is licensed under the MIT License.
 
 # Contributing
 
-Contributions are welcome! Please submit issues or pull requests to the GitHub repository. Ensure your code follows the project’s coding standards.
+Contributions are welcome! Please submit issues or pull requests to the GitHub repository. Ensure your code follows the projectâ€™s coding standards.
