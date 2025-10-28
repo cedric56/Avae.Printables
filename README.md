@@ -75,19 +75,28 @@ Linux (the following workflow is required)
 
 https://github.com/lytico/GtkSharp.Workload
 
+# Example: Print a file
+
+````
+using Avae.Printables;
+
+Printable.PrintAsync("C://Temp/test.pdf");
+
+````
+
 # Example: Print MainView
 
 ````
-using Avae.Printable;
+using Avae.Printables;
 
-Printables.PrintAsync();
+Printable.PrintAsync();
 
 ````
 
 # Example: Print visuals
 
 ````
-using Avae.Printable;
+using Avae.Printables;
 
 var visual = Application.Current.ApplicationLifetime
             is ISingleViewApplicationLifetime singleViewApplicationLifetime ? singleViewApplicationLifetime.MainView :
