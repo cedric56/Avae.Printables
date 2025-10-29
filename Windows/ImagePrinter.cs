@@ -19,8 +19,10 @@ namespace Avae.Printables
                 Height = printableHeight
             };
 
-            canvas.PaintSurface += (s, e) =>
+            EventHandler<SKPaintSurfaceEventArgs>? handler = null!;
+            canvas.PaintSurface += handler = (s, e) =>
             {
+                canvas.PaintSurface -= handler;
                 using var bitmap = SKBitmap.Decode(file);
                 using var img = SKImage.FromBitmap(bitmap);
                 e.Surface.Canvas.DrawImage(img, new SKRect(0, 0, (float)printableWidth, (float)printableHeight));

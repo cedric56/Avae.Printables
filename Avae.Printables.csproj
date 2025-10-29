@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>Avae.Printables</PackageId>
-    <Version>2.0.1</Version>
+    <Version>3.0.0</Version>
     <Authors>cedricb</Authors>
     <Product>Avae.Printables</Product>
     <Description>Printing for avalonia</Description>
@@ -21,7 +21,7 @@
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.1.3" />
     <PackageReference Include="Avalonia.Skia" Version="11.1.3" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.3.0" />    
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.3.0" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="" />
@@ -51,10 +51,18 @@
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'macos'">
     <!--<PackageReference Include="Avalonia.Desktop" Version="11.1.3" />-->
   </ItemGroup>
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
     <PackageReference Include="SkiaSharp.Views.WinUI" Version="3.119.0" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.250916003" />    
     <PackageReference Include="System.Drawing.Common" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.49-beta">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   
 </Project>

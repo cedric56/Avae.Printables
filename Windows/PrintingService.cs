@@ -3,27 +3,43 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Hosting;
-using System.Diagnostics;
+using SkiaSharp;
 using System.Drawing.Printing;
-using Path = System.IO.Path;
+using System.IO;
+using System.Printing;
+using Windows.Data.Pdf;
+using Windows.Storage;
 
 namespace Avae.Printables
 {
-    public class PrintingService : IPrintingService<PrinterBase>
+    public class PrintingService : IPrintingService
     {
-        public delegate PrinterBase PrintDelegate(string title, string file);
+        public delegate Task<PrinterBase> PrintDelegate(string title, string file);
+        public delegate Task<string> ConversionDelegate(string file);
+        public Dictionary<string, ConversionDelegate> Conversions = new Dictionary<string, ConversionDelegate>()
+        {
+            { ".jpeg" , ImageHelper.ConvertToPdf },
+            { ".bmp" , ImageHelper.ConvertToPdf },
+            { ".jpg" , ImageHelper.ConvertToPdf },
+            { ".png" , ImageHelper.ConvertToPdf },
+            {".ico" , ImageHelper.ConvertToPdf },
+            {".gif" , ImageHelper.ConvertToPdf },
+            {".pdf" , (file) => Task.FromResult(file) },
+            {".htm" , HtmlHelper.ConvertToPdf },
+            {".html" , HtmlHelper.ConvertToPdf },
+        };
 
         private Dictionary<string, PrintDelegate> _entries = new Dictionary<string, PrintDelegate>()
         {
-            { ".pdf", (title, file) => new PdfPrinter(GetActiveWindow(), title, file) },
-            {    ".jpeg" ,(title, file) => new ImagePrinter(GetActiveWindow(), title, file) },
-             {   ".bmp" , (title, file) => new ImagePrinter(GetActiveWindow(), title, file) },
-              {  ".jpg" , (title, file) => new ImagePrinter(GetActiveWindow(), title, file) },
-               { ".png" , (title, file) => new ImagePrinter(GetActiveWindow(), title, file) },
-                {".ico" , (title, file) => new ImagePrinter(GetActiveWindow(), title, file) },
-                {".gif" , (title, file) => new ImagePrinter(GetActiveWindow(), title, file) },
-                {".htm" , (title, file) => new HtmlPrinter(GetActiveWindow(), title, file) },
-                {".html" , (title, file) => new HtmlPrinter(GetActiveWindow(), title, file) },
+            { ".pdf", PrintPdf },
+            { ".jpeg" ,PrintImage },
+            { ".bmp" , PrintImage },
+            { ".jpg" , PrintImage },
+            { ".png" , PrintImage },
+            { ".ico" , PrintImage },
+            { ".gif" , PrintImage },
+            { ".htm" , PrintHtml },
+            { ".html" , PrintHtml },
         };
         public Dictionary<string, PrintDelegate> Entries
         {
@@ -31,7 +47,6 @@ namespace Avae.Printables
             {
                 return _entries;
             }
-
         }
 
         public PrintingService(bool isHybrid)
@@ -49,29 +64,51 @@ namespace Avae.Printables
             var printers = new List<PrintablePrinter>();
             foreach (string printer in PrinterSettings.InstalledPrinters)
             {
-                var moq = new PrintablePrinter()
+                printers.Add(new PrintablePrinter()
                 {
                     Name = printer
-                };
-                printers.Add(moq);
+                });
             }
             return Task.FromResult(printers.AsEnumerable());
         }
 
-        public Task PrintAsync(PrintablePrinter printer, string file)
+        private static Task<PrinterBase> PrintPdf(string title, string file)
         {
-            var startInfo = new ProcessStartInfo(@"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe")
-            {
-                UseShellExecute = false,
-                RedirectStandardInput = true,
-                CreateNoWindow = true
-            };
-            using var process = Process.Start(startInfo);
-            process?.StandardInput.WriteLine($"# Get the current default printer\r\n$defaultPrinter = (Get-WmiObject -Query \"SELECT * FROM Win32_Printer WHERE Default = TRUE\").Name\r\n\r\n# Set the desired printer as the default printer\r\n$desiredPrinter = \"Your Printer Name\"\r\n(Get-WmiObject -Query \"SELECT * FROM Win32_Printer WHERE Name = '{printer.Name}'\").SetDefaultPrinter()\r\n\r\n# Print the document\r\nStart-Process -FilePath '{file}' -Verb Print\r\n\r\n# Restore the original default printer\r\n(Get-WmiObject -Query \"SELECT * FROM Win32_Printer WHERE Name = '$defaultPrinter'\").SetDefaultPrinter()\r\n");
-            return Task.CompletedTask;
+            return Task.FromResult<PrinterBase>(new PdfPrinter(GetActiveWindow(), title, file));
         }
 
+        private static Task<PrinterBase> PrintImage(string title, string file)
+        {
+            return Task.FromResult<PrinterBase>(new ImagePrinter(GetActiveWindow(), title, file));
+        }
 
+        private static async Task<PrinterBase> PrintHtml(string title, string file)
+        {
+            if (Printable.UseEdge)
+            {
+                var printer = new HtmlPrinter(file);
+                await printer.ShowPrintUI();
+                return null!;
+            }
+            return new PdfPrinter(GetActiveWindow(), title, await HtmlHelper.ConvertToPdf(file));
+        }
+
+        public async Task PrintAsync(PrintablePrinter printer, string file, string ouputfilename = "Silent job")
+        {
+            var ext = Path.GetExtension(file).ToLower();
+            var service = (PrintingService)Printable.Default;
+            if (service.Conversions.TryGetValue(ext, out var conversion))
+            {
+                var p = LocalPrintServer.GetDefaultPrintQueue();
+                var ticket = p.UserPrintTicket.GetXmlStream().ToArray();
+
+                var pdfFile = await StorageFile.GetFileFromPathAsync(await conversion(file));
+                var pdfDoc = await PdfDocument.LoadFromFileAsync(pdfFile);
+
+                var spool = new SpoolHelper();
+                spool.Print(printer.Name, ouputfilename, ticket, pdfDoc);
+            }
+        }
 
         public async Task PrintAsync(string file, Stream? stream = null, string title = "Title")
         {
@@ -79,7 +116,7 @@ namespace Avae.Printables
             PrinterBase? printer = null!;
             if (Entries.TryGetValue(ext, out var entry))
             {
-                printer = entry(title, file);
+                printer = await entry(title, file);
             }
             else
             {
@@ -92,7 +129,7 @@ namespace Avae.Printables
                 await printer.ShowPrintUIAsync();
             }
         }
-
+        
         public async Task PrintAsync(IEnumerable<Visual> visuals, string title = "Title")
         {
             var helper = new VisualPrinter(GetActiveWindow(), title, visuals);

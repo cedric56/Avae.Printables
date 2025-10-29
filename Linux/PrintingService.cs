@@ -1,14 +1,42 @@
 ﻿#if GTK
 using Avalonia.X11.Interop;
 using Gtk;
+using SkiaSharp;
 using System.Net;
 using WebKit;
 using Path = System.IO.Path;
 
 namespace Avae.Printables
 {  
-    public class PrintingService : IPrintingService<Task<PrintOperationBase>>
+    public class PrintingService : IPrintingService
     {
+    //public delegate Task<string> ConversionDelegate(string file);
+    //    public Dictionary<string, ConversionDelegate> Conversions = new Dictionary<string, ConversionDelegate>()
+    //    {
+    //        {    ".jpeg" , ConvertImageToPdf },
+    //         {   ".bmp" , ConvertImageToPdf },
+    //          {  ".jpg" , ConvertImageToPdf },
+    //           { ".png" , ConvertImageToPdf },
+    //            {".ico" , ConvertImageToPdf },
+    //            {".gif" , ConvertImageToPdf },
+    //        {".pdf" , (file) => Task.FromResult(file) },
+    //    };
+
+        //public static Task<string> ConvertImageToPdf(string file)
+        //{
+        //    var temp = Path.GetTempPath() + "temp.pdf";
+        //    using (var doc = SKDocument.CreatePdf(temp))
+        //    {
+        //        using var canvas = doc.BeginPage(595, 894);
+        //        using var bitmap = SKBitmap.Decode(file);
+        //        using var image = SKImage.FromBitmap(bitmap);
+        //        canvas.DrawImage(image, 0, 0);
+        //        doc.EndPage();
+        //        doc.Close();
+        //    }
+        //    return Task.FromResult(temp);
+        //}
+
         public delegate Task<PrintOperationBase> PrintDelegate(string title, string file);
 
 

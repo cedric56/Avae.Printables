@@ -1,64 +1,46 @@
 ﻿#if WINDOWS10_0_19041_0_OR_GREATER
 using Microsoft.UI.Xaml.Controls;
-using SkiaSharp;
-using SkiaSharp.Views.Windows;
+using Microsoft.Web.WebView2.Core;
 using System.Diagnostics;
+using System.IO;
+using Windows.Foundation;
+
 namespace Avae.Printables
-{
-    public class HtmlPrinter : PrinterBase
+{    
+    public class HtmlPrinter
     {
+        private string file;
 
-        public HtmlPrinter(nint handle, string title, string file)
-        : base(handle, title, file)
+        public HtmlPrinter(string file)
         {
-
+            this.file = file;
         }
 
-        protected override async Task CreatePreview(double printableWidth, double printableHeight)
+        public async Task ShowPrintUI()
         {
             try
             {
-                WebView2 w = new WebView2();
-                await w.EnsureCoreWebView2Async();
+                var webView = new WebView2();
+                
+                await webView.EnsureCoreWebView2Async();
 
-                var tcs = new TaskCompletionSource();
-
-                file = "file:///" + file;
-                w.Source = new Uri(file);
-                //w.CoreWebView2.Navigate(file);
-                string pdfPath = string.Empty;
-                w.CoreWebView2.DOMContentLoaded += async (sender, e) =>
+                TypedEventHandler<CoreWebView2, CoreWebView2DOMContentLoadedEventArgs>? loaded = null;
+                webView.CoreWebView2.DOMContentLoaded += loaded = (sender, e) =>
                 {
-                    var path = Path.Combine(Path.GetTempPath(), "preview.pdf");
-                    var settings = w.CoreWebView2.Environment.CreatePrintSettings();
-                    settings.ShouldPrintBackgrounds = true;
-                    settings.MarginBottom =
-                    settings.MarginLeft =
-                    settings.MarginRight =
-                    settings.MarginTop = 0;
+                    webView.CoreWebView2.DOMContentLoaded -= loaded;
 
-                    await w.CoreWebView2.PrintToPdfAsync(path, settings);
-                    pdfPath = Convert.ToBase64String(File.ReadAllBytes(path));
-                    tcs.SetResult();
+                    webView.CoreWebView2.ShowPrintUI(CoreWebView2PrintDialogKind.System);
                 };
-                await tcs.Task;
 
-                var images = PDFtoImage.Conversion.ToImages(pdfPath);
-                foreach (var bitmap in images)
+                var ext = Path.GetExtension(file).ToLower();
+                if (ext == ".pdf")
                 {
-                    var canvas = new SKXamlCanvas
-                    {
-                        Width = printableWidth,
-                        Height = printableHeight
-                    };
-
-                    canvas.PaintSurface += (s, e) =>
-                    {
-                        using var img = SKImage.FromBitmap(bitmap);
-                        e.Surface.Canvas.DrawImage(img, new SKRect(0, 0, (float)printableWidth, (float)printableHeight));
-                    };
-                    canvas.Invalidate(); // still needed to trigger paint
-                    printPreviewPages.Add(canvas);
+                    webView.CoreWebView2.Navigate("file:///" + file);
+                }
+                else
+                {
+                    file = "file:///" + file;
+                    webView.Source = new Uri(file);
                 }
             }
             catch (Exception ex)

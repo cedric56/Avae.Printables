@@ -22,8 +22,10 @@ namespace Avae.Printables
                     Width = printableWidth,
                     Height = printableHeight
                 };
-                canvas.PaintSurface += async (s, e) =>
+                EventHandler<SKPaintSurfaceEventArgs>? handler = null!;
+                canvas.PaintSurface += handler = async (s, e) =>
                 {
+                    canvas.PaintSurface -= handler;
                     using var img = await VisualHelper.Render(visual, printableWidth, printableHeight, DrawingContextHelper.RenderAsync);
                     e.Surface.Canvas.DrawImage(img, new SKRect(0, 0, (float)printableWidth, (float)printableHeight));
                 };

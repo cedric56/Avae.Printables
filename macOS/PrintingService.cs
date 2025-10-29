@@ -10,7 +10,7 @@ using WebKit;
 
 namespace Avae.Printables
 {
-    public class PrintingService : IPrintingService<Task>
+    public class PrintingService : IPrintingService
     {
         public delegate Task PrintDelegate(string title, string file);
 
@@ -115,7 +115,7 @@ namespace Avae.Printables
             return Task.FromResult(printers.AsEnumerable());
         }
 
-        public Task PrintAsync(PrintablePrinter printer, string file)
+        public Task PrintAsync(PrintablePrinter printer, string file, string ouputfilename = "Silent job")
         {
             ProcessStartInfo pStartInfo = new ProcessStartInfo();
             pStartInfo.FileName = "lpr";

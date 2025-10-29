@@ -1,19 +1,9 @@
 ﻿using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using System.IO;
 
 namespace Avae.Printables
 {
-    public interface IPrintingService<T> : IPrintingService
-    {
-        Dictionary<string, Func<string, string, T>> Entries
-        {
-            get
-            {
-                return new Dictionary<string, Func<string, string, T>>();
-            }
-        }
-    }
-
     public interface IPrintingService
     {
         internal Visual GetVisual()
@@ -31,7 +21,7 @@ namespace Avae.Printables
 
         Task PrintAsync(IEnumerable<Visual> visuals, string title = "Title");
         Task PrintAsync(string file, Stream? stream = null, string title = "Title");
-        Task PrintAsync(PrintablePrinter printer, string file)
+        Task PrintAsync(PrintablePrinter printer, string file, string ouputfilename = "")
         {
             throw new NotImplementedException();
         }

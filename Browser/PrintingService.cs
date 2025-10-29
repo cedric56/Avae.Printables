@@ -7,7 +7,7 @@ using System.Runtime.InteropServices.JavaScript;
 
 namespace Avae.Printables
 {
-    public partial class PrintingService : IPrintingService<Task>
+    public partial class PrintingService : IPrintingService
     {
         public class Response
         {

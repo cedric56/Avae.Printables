@@ -7,7 +7,7 @@ using WebKit;
 
 namespace Avae.Printables
 {
-    public class PrintingService : IPrintingService<Task>
+    public class PrintingService : IPrintingService
     {
         public delegate Task PrintDelegate(string title, string file);
 

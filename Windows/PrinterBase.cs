@@ -3,6 +3,7 @@ using Avalonia;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Printing;
 using Windows.Graphics.Printing;
+using Windows.Storage.Streams;
 
 namespace Avae.Printables
 {
@@ -17,7 +18,7 @@ namespace Avae.Printables
         /// <summary>
         /// Marker interface for document source
         /// </summary>
-        protected IPrintDocumentSource printDocumentSource;
+        public IPrintDocumentSource printDocumentSource;
 
         /// <summary>
         /// A list of UIElements used to store the print preview pages.  This gives easy access
@@ -34,7 +35,7 @@ namespace Avae.Printables
         /// </summary>
         /// <param name="scenarioPage">The scenario page constructing us</param>
         public PrinterBase(nint handle, string title, IEnumerable<Visual> visuals)
-            //: this()
+        //: this()
         {
             printPreviewPages = new List<UIElement>();
             this.visuals = visuals;
@@ -43,7 +44,7 @@ namespace Avae.Printables
         }
 
         public PrinterBase(nint handle, string title, string file)
-            //: this()
+        //: this()
         {
             printPreviewPages = new List<UIElement>();
             this.handle = handle;

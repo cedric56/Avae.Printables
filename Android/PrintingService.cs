@@ -16,7 +16,7 @@ using Paint = Android.Graphics.Paint;
 
 namespace Avae.Printables
 {
-    public class PrintingService : IPrintingService<Task>
+    public class PrintingService : IPrintingService
     {
         Activity activity;
         Context context;
