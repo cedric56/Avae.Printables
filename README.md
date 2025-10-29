@@ -1,6 +1,6 @@
 # Avae.Printables
 
-A crossplatform library for printing.
+A crossplatform library for printing. (Supported formats Png,Pdf,Html,Gif,Jpeg,Bmp,Ico)
 
 # Features
 
@@ -75,19 +75,28 @@ Linux (the following workflow is required)
 
 https://github.com/lytico/GtkSharp.Workload
 
+# Example: Print a file
+
+````
+using Avae.Printables;
+
+Printable.PrintAsync("C://Temp/test.pdf");
+
+````
+
 # Example: Print MainView
 
 ````
-using Avae.Printable;
+using Avae.Printables;
 
-Printables.PrintAsync();
+Printable.PrintAsync();
 
 ````
 
 # Example: Print visuals
 
 ````
-using Avae.Printable;
+using Avae.Printables;
 
 var visual = Application.Current.ApplicationLifetime
             is ISingleViewApplicationLifetime singleViewApplicationLifetime ? singleViewApplicationLifetime.MainView :
@@ -125,4 +134,4 @@ Avae.Printables is licensed under the MIT License.
 
 # Contributing
 
-Contributions are welcome! Please submit issues or pull requests to the GitHub repository. Ensure your code follows the project’s coding standards.
+Contributions are welcome! Please submit issues or pull requests to the GitHub repository. Ensure your code follows the projectâ€™s coding standards.
